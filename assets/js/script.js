@@ -14,27 +14,34 @@ var createTask = function(taskText, taskDate, taskList) {
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
 
-//check due date
-    var auditTask = function(taskEl) {
-      // get date from task element
+  //check due date
+  auditTask(taskLi);
+
+  // append to ul list on the page
+  $("#list-" + taskList).append(taskLi);
+};
+
+
+var auditTask = function(taskEl) {
+  // get date from task element
       var date = $(taskEl).find("span").text().trim();
 
       // convert to moment object at 5:00pm
       var time = moment(date, "L").set("hour", 17);
 
       // remove any old classes from element
-      $(taskEl).removeClass("list-group-item-warning list-group-item-danger");               // apply new class if task is near/over due date
+      $(taskEl).removeClass("list-group-item-warning list-group-item-danger");                
+       // apply new class if task is near/over due date
       if (moment().isAfter(time)) {
-    $(taskEl).addClass("list-group-item-danger");
-  } 
-  else if (Math.abs(moment().diff(time, "days")) <= 2) {
-    $(taskEl).addClass("list-group-item-warning");
-  }
-      
-    };
-  // append to ul list on the page
-  $("#list-" + taskList).append(taskLi);
+        $(taskEl).addClass("list-group-item-danger");
+      } 
+      else if (Math.abs(moment().diff(time, "days")) <= 2) {
+        $(taskEl).addClass("list-group-item-warning");
+      }
+  
 };
+
+
 $(".card .list-group").sortable({
   connectWith: $(".card .list-group"),
   scroll: false,
@@ -57,14 +64,8 @@ $(".card .list-group").sortable({
     // loop over current set of children in sortable list
     $(this).children().each(function() {
       
-      var text = $(this)
-        .find("p")
-        .text()
-        .trim();
-      var date = $(this)
-        .find("span")
-        .text()
-        .trim();
+      var text = $(this).find("p").text().trim();
+      var date = $(this).find("span").text().trim();
 
     //add task data to the temp array as an object///////////////////////////////////////////////////////////////
     tempArr.push({
@@ -147,9 +148,7 @@ $(".list-group").on("blur", "textarea", function() {
 
 
 // modal was triggered// get the textarea's value/text
-var text =$(this)
-  .val()
-  .trim();
+var text =$(this).val().trim();
 //get the parent ul's id attribute
 var status = $(this)
 .closest(".list-group")
@@ -221,20 +220,18 @@ $(".list-group").on("click", "span", function() {
 });
 // value of due date was changed
 $(".list-group").on("change", "input[type='text']", function() {
-  // get current text
   var date = $(this).val();
-  
-  var status = $(this).closest(".list-group").attr("id").replace("list-", "");
 
-  // get the task's position in the list of other li elements
+  var status = $(this).closest(".list-group").attr("id").replace("list-", "");
   var index = $(this).closest(".list-group-item").index();
 
-  // update task in array and re-save to localstorage
   tasks[status][index].date = date;
   saveTasks();
+
   var taskSpan = $("<span>").addClass("badge badge-primary badge-pill").text(date);
   $(this).replaceWith(taskSpan);
-  //pass task's <li> element into auditTask()checking for new due date
+
+  // Pass task's <li> element into auditTask() to check new due date
   auditTask($(taskSpan).closest(".list-group-item"));
 });
 // remove all tasks
